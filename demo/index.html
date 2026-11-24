@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Rajasarana Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE work: demo produk untuk pitching ke perusahaan trucking
+   IDEA papan jadwal ekspedisi: tiga perangkat di satu meja, satu data mengalir di antaranya
+   PICTURE tiga HP berisi app Pelanggan, Sopir, Kantor yang benar-benar bisa diklik
+   COLOUR putih, hitam aspal, merah sinyal #e4002b; malam #0e0e0e
+   TYPE Archivo lebar 800 + Inter
+   LAYOUT laptop: tiga HP berjajar + jejak data di bawah; HP/720px: tab pilih app, satu HP */
+:root{color-scheme:light dark;--bg:light-dark(#fff,#0e0e0e);--ink:light-dark(#111,#f2f2f2);--mut:light-dark(#5d6168,#a3a7ad);--line:light-dark(#e3e4e6,#2a2c30);--scr:light-dark(#f6f6f7,#17181b);--card:light-dark(#fff,#202226);--red:#e4002b;--ok:light-dark(#0a7a45,#3ccf8a);--warn:light-dark(#a35a00,#ffb547)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(24px,3.5vw,48px) max(4vw,16px)}
+h1{font:800 clamp(30px,4.4vw,48px)/1.05 Archivo,Inter,sans-serif;font-stretch:112%;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.top{border-top:8px solid var(--red);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between}
+.top p{margin:8px 0 0;color:var(--mut);max-width:60ch;font-size:16px}
+.btn{font:600 15px Inter,sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.w{width:100%}
+.tabs{display:none;gap:6px;margin-bottom:14px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0}
+.tabs button{flex:1;position:relative}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.bdg{position:absolute;top:-6px;right:-4px;background:var(--red);color:#fff;font-size:12px;border-radius:99px;padding:1px 7px}
+.stage{display:grid;grid-template-columns:repeat(3,minmax(0,380px));gap:28px;justify-content:center;padding-top:0}
+.phone{background:#0e0e0e;border-radius:42px;padding:10px;box-shadow:0 0 0 1px #2c2d31}
+.cap{font:800 20px Archivo,sans-serif;font-stretch:112%;margin:0 0 10px 6px}
+.cap span{display:block;font:500 14px Inter,sans-serif;color:var(--mut)}
+.scr{height:740px;border-radius:33px;overflow:auto;background:var(--scr);position:relative}
+.sb{display:flex;justify-content:space-between;font:600 13px Inter;padding:10px 22px 4px}
+.ah{padding:6px 18px 16px}
+.ah b{font:800 22px Archivo,sans-serif;font-stretch:112%;display:block}
+.ah small{font-size:13px;opacity:.85}
+.h-cust{background:var(--red);color:#fff}.h-drv{background:#111;color:#fff}.h-adm{background:var(--card);border-bottom:4px solid var(--red)}
+.sec{padding:12px 14px}
+.sec h3{font:700 15px Inter;margin:6px 2px 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.route{font-weight:700;font-size:16px;margin-top:6px}
+.meta{color:var(--mut);font-size:13px}
+.pill{font-size:12px;font-weight:600;border-radius:99px;padding:3px 9px;white-space:nowrap;background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.pill.s-jalan,.pill.s-muat,.pill.s-ditugaskan,.pill.s-tiba{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red)}
+.pill.s-selesai,.pill.lunas{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.price{font:800 20px Archivo,sans-serif;font-stretch:112%;white-space:nowrap}
+.map{width:100%;height:auto;display:block;margin:8px 0 2px}
+.map .road{fill:none;stroke:var(--line);stroke-width:7;stroke-linecap:round}
+.map .done{fill:none;stroke:var(--red);stroke-width:7;stroke-linecap:round}
+.map text{font:600 12px Inter;fill:var(--ink);paint-order:stroke;stroke:var(--card);stroke-width:4px}
+.steps{display:flex;gap:4px;margin:10px 0 4px}
+.steps i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.steps i.on{background:var(--red)}
+.stl{font-size:12px;color:var(--mut)}
+label{display:block;font-size:13px;font-weight:600;margin:10px 2px 4px}
+input,select{font:16px Inter,sans-serif;width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--card);color:var(--ink)}
+input[type=file]{padding:9px 10px}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 8px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 8px}
+.est{display:flex;justify-content:space-between;align-items:baseline;margin:12px 2px}
+.kpi{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.kpi b{display:block;font:800 clamp(18px,5vw,22px) Archivo,sans-serif;font-stretch:112%;white-space:nowrap}
+.kpi span{font-size:12px;color:var(--mut)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--red);transition:width .9s linear}
+.fl{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.fl:first-child{border-top:0}
+.fl b{white-space:nowrap}
+.sig{width:100%;height:140px;border:1px dashed var(--mut);border-radius:12px;background:light-dark(#fff,#111);touch-action:none;display:block}
+.thumb{width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:8px;border:1px solid var(--line)}
+.empty{text-align:center;color:var(--mut);padding:30px 10px}
+details summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--red);margin-top:8px}
+.feed{max-width:1196px;margin:0 auto}
+.feed h2{font:800 24px Archivo,sans-serif;font-stretch:112%;margin:0 0 4px}
+.feed>p{color:var(--mut);margin:0 0 12px}
+.ev{display:grid;grid-template-columns:52px auto minmax(0,1fr);gap:12px;padding:10px 0;border-top:1px solid var(--line);align-items:baseline}
+.ev time{font-variant-numeric:tabular-nums;color:var(--mut);font-size:13px}
+.chip{font-size:12px;font-weight:600;white-space:nowrap;border:1px solid var(--line);border-radius:99px;padding:2px 8px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;max-width:90vw}
+.toast.on{opacity:1}
+.note{font-size:13px;color:var(--mut)}
+@media(max-width:1219px){.stage{grid-template-columns:minmax(0,400px)}.phone:not(.on){display:none}.tabs{display:flex;max-width:400px;margin-inline:auto}.cap{display:none}}
+@media(max-width:600px){.phone{border-radius:30px;padding:6px}.scr{height:auto;min-height:70svh;border-radius:25px}}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<header class="band top">
+  <div>
+    <h1>Rajasarana Connect</h1>
+    <p>Tiga aplikasi, satu data. Pesan truk di app Pelanggan, setujui di Kantor, jalankan di app Sopir, lalu lihat semuanya bergerak bersama.</p>
+  </div>
+  <div class="row"><span class="note">Semua nama, harga, dan armada di demo ini contoh.</span><button class="btn" data-act="reset">Ulang demo</button></div>
+</header>
+
+<main class="band" style="padding-top:0">
+  <nav class="tabs" aria-label="Pilih aplikasi">
+    <button class="btn" data-tab="cust">Pelanggan<span class="bdg" id="b-cust" hidden></span></button>
+    <button class="btn" data-tab="drv">Sopir<span class="bdg" id="b-drv" hidden></span></button>
+    <button class="btn" data-tab="adm">Kantor<span class="bdg" id="b-adm" hidden></span></button>
+  </nav>
+  <div class="stage">
+    <section class="ph-wrap" data-app="cust">
+      <p class="cap">Pelanggan<span>Pesan dan lacak kiriman</span></p>
+      <div class="phone"><div class="scr">
+        <div class="h-cust"><div class="sb"><span>09:41</span><span>5G ▮▮▮</span></div>
+          <div class="ah"><b>RSM Trucking</b><small>PT Sinar Pangan Lestari</small></div></div>
+        <div class="sec"><h3>Kiriman aktif</h3><div id="c-act"></div></div>
+        <div class="sec"><h3>Pesan truk</h3>
+          <form class="card" id="f-order">
+            <div class="g2">
+              <div><label for="f-from">Asal</label><select id="f-from"></select></div>
+              <div><label for="f-to">Tujuan</label><select id="f-to"></select></div>
+            </div>
+            <label for="f-truck">Jenis truk</label><select id="f-truck"></select>
+            <div class="g2">
+              <div><label for="f-date">Tanggal muat</label><input id="f-date" type="date"></div>
+              <div><label for="f-w">Berat (ton)</label><input id="f-w" type="number" min="0.5" step="0.5" value="6"></div>
+            </div>
+            <label for="f-cargo">Muatan</label><input id="f-cargo" value="Minyak goreng kemasan, 420 karton">
+            <div class="est"><span class="meta" id="f-km"></span><span class="price" id="f-est"></span></div>
+            <button class="btn pri w" type="submit">Kirim pesanan</button>
+          </form>
+        </div>
+        <div class="sec"><h3>Riwayat &amp; tagihan</h3><div id="c-hist"></div></div>
+      </div></div>
+    </section>
+
+    <section class="ph-wrap" data-app="drv">
+      <p class="cap">Sopir<span>Tugas jalan dan bukti kirim</span></p>
+      <div class="phone"><div class="scr">
+        <div class="h-drv"><div class="sb"><span>09:41</span><span>4G ▮▮▯</span></div>
+          <div class="ah"><b>RSM Sopir</b><small id="d-who"></small></div></div>
+        <div class="sec"><label for="d-sel" style="margin-top:0">Masuk sebagai</label><select id="d-sel"></select></div>
+        <div id="d-body"></div>
+      </div></div>
+    </section>
+
+    <section class="ph-wrap" data-app="adm">
+      <p class="cap">Kantor &amp; owner<span>Order, armada, tagihan</span></p>
+      <div class="phone"><div class="scr">
+        <div class="h-adm"><div class="sb"><span>09:41</span><span>Wi-Fi</span></div>
+          <div class="ah"><b>RSM Kantor</b><small>Cikarang Utara · hari ini</small></div></div>
+        <div id="a-body"></div>
+      </div></div>
+    </section>
+  </div>
+</main>
+
+<section class="band" style="padding-top:8px">
+  <div class="feed">
+    <h2>Jejak data antar aplikasi</h2>
+    <p>Setiap aksi di satu app langsung sampai ke app lain. Ini yang membedakan sistem terhubung dari WhatsApp dan spreadsheet.</p>
+    <div id="feed"></div>
+  </div>
+</section>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const KEY='rsm-demo-v1';
+// posisi kota di sumbu barat-timur (km dari Cikarang), untuk estimasi jarak demo
+const CITY={'Bandar Lampung':-290,'Merak':-140,'Jakarta':-40,'Cikarang':0,'Bandung':130,'Cirebon':190,'Semarang':450,'Yogyakarta':520,'Surabaya':780,'Malang':850};
+const TRUCK=[{k:'CDE',cap:4,rate:7500},{k:'CDD',cap:8,rate:10000},{k:'Fuso',cap:15,rate:14000},{k:'Wingbox',cap:20,rate:18000},{k:'Tronton',cap:25,rate:21000}];
+const FLEET=[{id:'t1',plate:'B 9102 KCA',type:'CDE'},{id:'t2',plate:'B 9417 FXD',type:'CDD'},{id:'t3',plate:'B 9333 KJR',type:'CDD'},{id:'t4',plate:'B 9620 UVW',type:'Fuso'},{id:'t5',plate:'B 9811 KTR',type:'Wingbox'},{id:'t6',plate:'B 9055 TRN',type:'Tronton'}];
+const DRV=[{id:'d1',name:'Darto'},{id:'d2',name:'Wawan'},{id:'d3',name:'Joko'},{id:'d4',name:'Asep'},{id:'d5',name:'Rudi'}];
+const ST=['baru','ditugaskan','muat','jalan','tiba','selesai'];
+const SL={baru:'Menunggu konfirmasi',ditugaskan:'Truk ditugaskan',muat:'Sedang muat',jalan:'Dalam perjalanan',tiba:'Tiba di tujuan',selesai:'Diterima'};
+const APP={cust:'Pelanggan',drv:'Sopir',adm:'Kantor'};
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rp=n=>'Rp '+Math.round(n).toLocaleString('id-ID');
+const now=()=>new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+const km=(a,b)=>Math.max(30,Math.abs(CITY[a]-CITY[b]));
+const estimate=(a,b,t)=>{const r=TRUCK.find(x=>x.k===t).rate;return Math.max(1500000,Math.round(km(a,b)*r/50000)*50000)};
+const truck=id=>FLEET.find(t=>t.id===id);
+const drv=id=>DRV.find(d=>d.id===id);
+let S;
+
+function seed(){
+  S={seq:103,ui:{tab:'cust',drv:'d1'},badge:{cust:0,drv:0,adm:0},log:[],orders:[
+    {id:'RSM-0101',from:'Cikarang',to:'Semarang',truck:'CDD',date:'2026-11-24',w:7,cargo:'Mi instan, 900 karton',est:4500000,price:4500000,status:'jalan',truckId:'t2',driverId:'d1',prog:46,costs:{bbm:0,tol:0,lain:0}},
+    {id:'RSM-0102',from:'Cikarang',to:'Surabaya',truck:'Wingbox',date:'2026-11-25',w:18,cargo:'Tepung terigu, 720 sak',est:14050000,price:0,status:'baru',prog:0,costs:{bbm:0,tol:0,lain:0}},
+    {id:'RSM-0099',from:'Jakarta',to:'Bandung',truck:'CDE',date:'2026-11-21',w:3,cargo:'Saus sambal, 260 karton',est:1500000,price:1600000,status:'selesai',truckId:'t1',driverId:'d3',prog:100,receiver:'Bu Ratna (gudang)',costs:{bbm:520000,tol:180000,lain:100000},inv:{no:'INV-2611-0099',paid:false}},
+    {id:'RSM-0098',from:'Cikarang',to:'Cirebon',truck:'Fuso',date:'2026-11-19',w:12,cargo:'Gula pasir, 240 sak',est:2650000,price:2700000,status:'selesai',truckId:'t4',driverId:'d2',prog:100,receiver:'Pak Hendra',costs:{bbm:900000,tol:260000,lain:150000},inv:{no:'INV-2611-0098',paid:true}}
+  ]};
+  log('drv','cust','RSM-0101 berangkat dari Cikarang, posisi truk mulai terlacak');
+  log('cust','adm','PT Sinar Pangan memesan Wingbox Cikarang → Surabaya (RSM-0102)');
+  S.badge={cust:0,drv:0,adm:0};
+}
+function log(from,to,text){
+  S.log.unshift({t:now(),from,to,text});S.log=S.log.slice(0,14);
+  const wide=matchMedia('(min-width:1220px)').matches;
+  if(!wide&&to!==S.ui.tab)S.badge[to]=(S.badge[to]||0)+1;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
+const busyT=()=>S.orders.filter(o=>o.status!=='selesai'&&o.truckId).map(o=>o.truckId);
+const busyD=()=>S.orders.filter(o=>o.status!=='selesai'&&o.driverId).map(o=>o.driverId);
+
+function steps(o){const i=ST.indexOf(o.status);return `<div class="steps">${ST.map((s,j)=>`<i class="${j<=i?'on':''}"></i>`).join('')}</div><div class="stl">${esc(SL[o.status])}</div>`}
+function map(o){
+  const p=o.status==='jalan'?o.prog:(['tiba','selesai'].includes(o.status)?100:0);
+  const d='M24 82 C 110 6, 210 112, 296 30';
+  return `<svg class="map" viewBox="0 0 320 112" role="img" aria-label="Posisi truk ${esc(o.from)} ke ${esc(o.to)}">
+  <path class="road" d="${d}"/><path class="done" d="${d}" pathLength="100" stroke-dasharray="${p} 100" data-done="${o.id}"/>
+  <path d="${d}" fill="none" stroke="none" data-path="${o.id}"/>
+  <circle cx="24" cy="82" r="7" fill="var(--ink)"/><circle cx="296" cy="30" r="7" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+  <text x="14" y="106">${esc(o.from)}</text><text x="306" y="14" text-anchor="end">${esc(o.to)}</text>
+  <g data-trk="${o.id}"><rect x="-13" y="-9" width="26" height="18" rx="4" fill="var(--red)"/><rect x="5" y="-6" width="6" height="7" rx="1" fill="#fff"/><circle cx="-7" cy="10" r="3.4" fill="var(--ink)"/><circle cx="7" cy="10" r="3.4" fill="var(--ink)"/></g></svg>
+  <div class="meta" data-eta="${o.id}">${eta(o)}</div>`;
+}
+function eta(o){
+  if(o.status==='jalan'){const left=Math.round(km(o.from,o.to)*(100-o.prog)/100);return o.prog>=100?'Truk sudah di titik tujuan':`Sisa ±${left} km · perkiraan tiba ${Math.max(1,Math.round(left/55))} jam lagi`}
+  if(o.status==='tiba')return 'Truk tiba, sedang bongkar muat';
+  return 'Truk belum berangkat';
+}
+
+function vCust(){
+  const act=S.orders.filter(o=>o.status!=='selesai');
+  $('#c-act').innerHTML=act.length?act.map(o=>{const t=truck(o.truckId),d=drv(o.driverId);return `<div class="card">
+    <div class="row"><b>${o.id}</b><span class="pill s-${o.status}">${SL[o.status]}</span></div>
+    <div class="route">${esc(o.from)} → ${esc(o.to)}</div>
+    <div class="meta">${esc(o.truck)} · ${esc(o.cargo)} · ${km(o.from,o.to)} km</div>
+    ${o.status==='baru'?`<div class="est"><span class="meta">Estimasi, menunggu harga final</span><span class="price">${rp(o.est)}</span></div>`:`<div class="est"><span class="meta">${esc(t.plate)} · Sopir ${esc(d.name)}</span><span class="price">${rp(o.price)}</span></div>${map(o)}`}
+    ${steps(o)}${o.photo?`<details><summary>Lihat foto surat jalan</summary><img class="thumb" src="${o.photo}" alt="Foto surat jalan"></details>`:''}</div>`}).join(''):'<div class="card empty">Tidak ada kiriman aktif.</div>';
+  const done=S.orders.filter(o=>o.status==='selesai');
+  $('#c-hist').innerHTML=done.map(o=>`<div class="card"><div class="row"><b>${o.id}</b><span class="pill ${o.inv.paid?'lunas':''}">${o.inv.paid?'Lunas':'Belum dibayar'}</span></div>
+    <div class="route">${esc(o.from)} → ${esc(o.to)}</div><div class="meta">Diterima ${esc(o.receiver)} · ${esc(o.inv.no)}</div>
+    <div class="est"><span class="meta">Tagihan</span><span class="price">${rp(o.price)}</span></div>
+    ${o.sign?`<details><summary>Lihat bukti terima</summary><img class="thumb" style="object-fit:contain;background:#fff" src="${o.sign}" alt="Tanda tangan penerima"></details>`:''}</div>`).join('');
+}
+
+function vDrv(){
+  const me=drv(S.ui.drv);$('#d-who').textContent='Sopir '+me.name;
+  $('#d-sel').innerHTML=DRV.map(d=>`<option value="${d.id}" ${d.id===S.ui.drv?'selected':''}>${esc(d.name)}</option>`).join('');
+  const jobs=S.orders.filter(o=>o.driverId===me.id&&o.status!=='selesai');
+  const o=jobs[0];
+  if(!o){$('#d-body').innerHTML=`<div class="sec"><div class="card empty">Belum ada tugas untuk ${esc(me.name)}.<br>Tugas baru dari kantor akan muncul di sini.</div></div>`;return}
+  const t=truck(o.truckId);let act='';
+  if(o.status==='ditugaskan')act=`<label for="ph">Foto surat jalan</label><input id="ph" type="file" accept="image/*" capture="environment"><p class="note">Boleh dilewati untuk demo.</p><button class="btn pri w" data-act="load" data-id="${o.id}">Mulai muat</button>`;
+  if(o.status==='muat')act=`<button class="btn pri w" data-act="go" data-id="${o.id}">Berangkat sekarang</button>`;
+  if(o.status==='jalan')act=`<div class="g2"><button class="btn" data-act="fast" data-id="${o.id}">Percepat (demo)</button><button class="btn pri" data-act="arrive" data-id="${o.id}" ${o.prog<100?'disabled':''} data-arr="${o.id}">Tiba di tujuan</button></div>`;
+  if(o.status==='tiba')act=`<label for="rcv">Nama penerima</label><input id="rcv" placeholder="Contoh: Pak Slamet (gudang)"><label>Tanda tangan penerima</label><canvas class="sig" id="sig"></canvas><div class="g2" style="margin-top:8px"><button class="btn" data-act="clr">Hapus</button><button class="btn pri" data-act="pod" data-id="${o.id}">Kirim bukti terima</button></div>`;
+  const c=o.costs;
+  $('#d-body').innerHTML=`<div class="sec"><h3>Tugas aktif</h3><div class="card">
+    <div class="row"><b>${o.id}</b><span class="pill s-${o.status}">${SL[o.status]}</span></div>
+    <div class="route">${esc(o.from)} → ${esc(o.to)}</div>
+    <div class="meta">${esc(t.plate)} (${esc(t.type)}) · ${esc(o.cargo)} · ${o.w} ton</div>
+    <div class="meta">Pengirim: PT Sinar Pangan Lestari</div>
+    ${map(o)}${steps(o)}<div style="margin-top:12px">${act}</div></div></div>
+    ${o.status!=='ditugaskan'?`<div class="sec"><h3>Biaya jalan</h3><div class="card"><div class="g3">
+      <div><label for="cb">BBM</label><input id="cb" type="number" inputmode="numeric" value="${c.bbm||''}" placeholder="0"></div>
+      <div><label for="ct">Tol</label><input id="ct" type="number" inputmode="numeric" value="${c.tol||''}" placeholder="0"></div>
+      <div><label for="cl">Lain</label><input id="cl" type="number" inputmode="numeric" value="${c.lain||''}" placeholder="0"></div></div>
+      <button class="btn dark w" style="margin-top:10px" data-act="cost" data-id="${o.id}">Lapor ke kantor</button></div></div>`:''}
+    ${jobs.length>1?`<div class="sec"><h3>Tugas berikutnya</h3>${jobs.slice(1).map(j=>`<div class="card"><b>${j.id}</b><div class="meta">${esc(j.from)} → ${esc(j.to)}</div></div>`).join('')}</div>`:''}`;
+  if(o.status==='tiba')bindSig();
+}
+
+function vAdm(){
+  const act=S.orders.filter(o=>o.status!=='selesai'),done=S.orders.filter(o=>o.status==='selesai');
+  const bt=busyT(),bd=busyD();
+  const rev=done.reduce((a,o)=>a+o.price,0),cost=done.reduce((a,o)=>a+o.costs.bbm+o.costs.tol+o.costs.lain,0);
+  const ar=done.filter(o=>!o.inv.paid).reduce((a,o)=>a+o.price,0);
+  const nw=act.filter(o=>o.status==='baru'),run=act.filter(o=>o.status!=='baru');
+  const freeT=FLEET.filter(t=>!bt.includes(t.id)),freeD=DRV.filter(d=>!bd.includes(d.id));
+  $('#a-body').innerHTML=`<div class="sec"><h3>Ringkasan bulan ini</h3><div class="kpi">
+    <div><b>${act.length}</b><span>Order aktif</span></div><div><b>${freeT.length}/${FLEET.length}</b><span>Armada siap jalan</span></div>
+    <div><b>${rp(rev)}</b><span>Pendapatan selesai</span></div><div><b>${rp(rev-cost)}</b><span>Margin setelah biaya jalan</span></div>
+    <div style="grid-column:1/-1"><b>${rp(ar)}</b><span>Piutang belum dibayar</span></div></div></div>
+    <div class="sec"><h3>Perlu tindakan (${nw.length})</h3>${nw.length?nw.map(o=>{const opts=[...freeT].sort((a,b)=>(b.type===o.truck)-(a.type===o.truck));return `<div class="card">
+      <div class="row"><b>${o.id}</b><span class="pill">Order baru</span></div>
+      <div class="route">${esc(o.from)} → ${esc(o.to)}</div><div class="meta">${esc(o.truck)} · ${o.w} ton · muat ${esc(o.date)} · ${esc(o.cargo)}</div>
+      <label for="p-${o.id}">Harga final (estimasi ${rp(o.est)})</label><input id="p-${o.id}" type="number" step="50000" value="${o.est}">
+      <div class="g2"><div><label for="t-${o.id}">Truk</label><select id="t-${o.id}">${opts.map(t=>`<option value="${t.id}">${esc(t.plate)} · ${t.type}</option>`).join('')||'<option value="">Tidak ada</option>'}</select></div>
+      <div><label for="d-${o.id}">Sopir</label><select id="d-${o.id}">${freeD.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('')||'<option value="">Tidak ada</option>'}</select></div></div>
+      <button class="btn pri w" style="margin-top:12px" data-act="approve" data-id="${o.id}">Setujui &amp; tugaskan</button></div>`}).join(''):'<div class="card empty">Semua order sudah ditangani.</div>'}</div>
+    <div class="sec"><h3>Sedang berjalan</h3>${run.length?run.map(o=>`<div class="card"><div class="row"><b>${o.id}</b><span class="pill s-${o.status}">${SL[o.status]}</span></div>
+      <div class="meta">${esc(o.from)} → ${esc(o.to)} · ${esc(truck(o.truckId).plate)} · ${esc(drv(o.driverId).name)}</div>
+      <div class="bar"><i data-bar="${o.id}" style="width:${o.status==='jalan'?o.prog:(o.status==='tiba'?100:0)}%"></i></div></div>`).join(''):'<div class="card empty">Tidak ada truk di jalan.</div>'}</div>
+    <div class="sec"><h3>Armada</h3><div class="card">${FLEET.map(t=>{const o=act.find(x=>x.truckId===t.id);return `<div class="fl"><b>${esc(t.plate)}</b><span>${t.type}${o?' · '+esc(drv(o.driverId).name):''}</span><span class="pill ${o?'s-jalan':'s-selesai'}">${o?o.id:'Siap'}</span></div>`}).join('')}</div></div>
+    <div class="sec"><h3>Invoice</h3>${done.map(o=>{const c=o.costs.bbm+o.costs.tol+o.costs.lain;return `<div class="card"><div class="row"><b>${esc(o.inv.no)}</b><span class="pill ${o.inv.paid?'lunas':''}">${o.inv.paid?'Lunas':'Belum dibayar'}</span></div>
+      <div class="meta">${o.id} · ${esc(o.from)} → ${esc(o.to)} · biaya jalan ${rp(c)}</div>
+      <div class="est"><span class="meta">Margin ${rp(o.price-c)}</span><span class="price">${rp(o.price)}</span></div>
+      ${o.inv.paid?'':`<button class="btn w" data-act="paid" data-id="${o.id}">Tandai lunas</button>`}</div>`}).join('')}</div>`;
+}
+
+function vFeed(){
+  $('#feed').innerHTML=S.log.map(e=>`<div class="ev"><time>${esc(e.t)}</time><span class="chip">${APP[e.from]} → ${APP[e.to]}</span><span>${esc(e.text)}</span></div>`).join('');
+  for(const k of ['cust','drv','adm']){const b=$('#b-'+k);b.hidden=!S.badge[k];b.textContent=S.badge[k]}
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===S.ui.tab));
+  document.querySelectorAll('.ph-wrap').forEach(p=>p.querySelector('.phone').classList.toggle('on',p.dataset.app===S.ui.tab));
+  document.querySelectorAll('.ph-wrap').forEach(p=>p.style.display=matchMedia('(min-width:1220px)').matches||p.dataset.app===S.ui.tab?'':'none');
+}
+function render(){vCust();vDrv();vAdm();vFeed();place();save()}
+
+// update posisi truk & progres tanpa render ulang form
+function place(){
+  for(const o of S.orders){
+    const p=o.status==='jalan'?o.prog:(['tiba','selesai'].includes(o.status)?100:0);
+    document.querySelectorAll(`[data-path="${o.id}"]`).forEach(path=>{
+      const g=path.parentNode.querySelector(`[data-trk="${o.id}"]`);
+      try{const L=path.getTotalLength(),pt=path.getPointAtLength(L*p/100);g.setAttribute('transform',`translate(${pt.x.toFixed(1)} ${(pt.y-12).toFixed(1)})`)}catch(e){}
+    });
+    document.querySelectorAll(`[data-done="${o.id}"]`).forEach(e=>e.setAttribute('stroke-dasharray',`${p} 100`));
+    document.querySelectorAll(`[data-bar="${o.id}"]`).forEach(e=>e.style.width=p+'%');
+    document.querySelectorAll(`[data-eta="${o.id}"]`).forEach(e=>e.textContent=eta(o));
+    document.querySelectorAll(`[data-arr="${o.id}"]`).forEach(e=>e.disabled=o.prog<100);
+  }
+}
+const tick=setInterval(()=>{
+  let ch=false;
+  for(const o of S.orders)if(o.status==='jalan'&&o.prog<100){
+    o.prog=Math.min(100,o.prog+1.6);ch=true;
+    if(o.prog>=100)log('drv','adm',`${o.id} sudah sampai di area ${o.to}`);
+  }
+  if(ch){place();if(S.orders.some(o=>o.status==='jalan'&&o.prog>=100&&!o._n)){S.orders.forEach(o=>{if(o.prog>=100)o._n=1});vFeed()}save()}
+},1000);
+
+let drawn=false;
+function bindSig(){
+  const c=$('#sig');if(!c)return;drawn=false;
+  const r=c.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=Math.max(1,r.width*dpr);c.height=Math.max(1,r.height*dpr);
+  const x=c.getContext('2d');x.scale(dpr,dpr);x.lineWidth=2.4;x.lineCap='round';x.strokeStyle='#111';
+  let on=false;const pos=e=>{const b=c.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top]};
+  c.onpointerdown=e=>{on=true;c.setPointerCapture(e.pointerId);const[a,b]=pos(e);x.beginPath();x.moveTo(a,b)};
+  c.onpointermove=e=>{if(!on)return;const[a,b]=pos(e);x.lineTo(a,b);x.stroke();drawn=true};
+  c.onpointerup=()=>on=false;
+}
+const sigURL=()=>{const c=$('#sig'),o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(c,0,0);return o.toDataURL('image/jpeg',.7)};
+function shrink(file,cb){const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,640/im.width),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.7))};im.onerror=()=>cb(null);im.src=fr.result};fr.readAsDataURL(file)}
+
+// formulir pemesanan pelanggan (statis, tidak ikut render ulang)
+const opt=o=>Object.keys(o).map(k=>`<option>${k}</option>`).join('');
+$('#f-from').innerHTML=opt(CITY);$('#f-to').innerHTML=opt(CITY);$('#f-from').value='Cikarang';$('#f-to').value='Yogyakarta';
+$('#f-truck').innerHTML=TRUCK.map(t=>`<option value="${t.k}">${t.k} · muat sampai ${t.cap} ton</option>`).join('');$('#f-truck').value='CDD';
+$('#f-date').value=new Date(Date.now()+864e5).toISOString().slice(0,10);
+function upd(){const a=$('#f-from').value,b=$('#f-to').value,t=$('#f-truck').value,w=+$('#f-w').value,cap=TRUCK.find(x=>x.k===t).cap;
+  $('#f-km').textContent=a===b?'Pilih tujuan yang berbeda':`±${km(a,b)} km${w>cap?' · melebihi kapasitas '+t:''}`;$('#f-est').textContent=rp(estimate(a,b,t))}
+['f-from','f-to','f-truck','f-w'].forEach(i=>$('#'+i).addEventListener('input',upd));upd();
+$('#f-order').addEventListener('submit',e=>{
+  e.preventDefault();const a=$('#f-from').value,b=$('#f-to').value,t=$('#f-truck').value;
+  if(a===b)return toast('Asal dan tujuan tidak boleh sama');
+  const o={id:'RSM-0'+(++S.seq),from:a,to:b,truck:t,date:$('#f-date').value,w:+$('#f-w').value||1,cargo:$('#f-cargo').value.trim()||'Barang umum',est:estimate(a,b,t),price:0,status:'baru',prog:0,costs:{bbm:0,tol:0,lain:0}};
+  S.orders.unshift(o);log('cust','adm',`PT Sinar Pangan memesan ${t} ${a} → ${b} (${o.id})`);render();toast('Pesanan terkirim ke kantor');
+});
+$('#d-sel').addEventListener('change',e=>{S.ui.drv=e.target.value;render()});
+
+document.addEventListener('click',e=>{
+  const tb=e.target.closest('[data-tab]');if(tb){S.ui.tab=tb.dataset.tab;S.badge[S.ui.tab]=0;vFeed();place();save();return}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const o=S.orders.find(x=>x.id===b.dataset.id),a=b.dataset.act;
+  if(a==='reset'){seed();render();toast('Demo diulang dari awal');return}
+  if(a==='approve'){
+    const p=+$('#p-'+o.id).value,t=$('#t-'+o.id).value,d=$('#d-'+o.id).value;
+    if(!t||!d)return toast('Tidak ada truk atau sopir yang siap');
+    Object.assign(o,{price:p||o.est,truckId:t,driverId:d,status:'ditugaskan'});S.ui.drv=d;
+    log('adm','cust',`${o.id} disetujui ${rp(o.price)}, truk ${truck(t).plate} ditugaskan`);
+    log('adm','drv',`Tugas baru untuk ${drv(d).name}: ${o.from} → ${o.to}`);render();toast('Pelanggan dan sopir sudah diberi tahu');
+  }
+  if(a==='load'){
+    const f=$('#ph')?.files?.[0];
+    const go=img=>{o.photo=img||null;o.status='muat';log('drv','cust',`${o.id} mulai muat${img?', foto surat jalan terunggah':''}`);log('drv','adm',`${o.id} mulai muat di ${o.from}`);render()};
+    f?shrink(f,go):go(null);
+  }
+  if(a==='go'){o.status='jalan';o.prog=0;delete o._n;log('drv','cust',`${o.id} berangkat, posisi truk bisa dilacak`);log('drv','adm',`${truck(o.truckId).plate} keluar menuju ${o.to}`);render()}
+  if(a==='fast'){o.prog=Math.min(100,o.prog+25);place();save()}
+  if(a==='arrive'){o.status='tiba';o.prog=100;log('drv','cust',`${o.id} tiba di ${o.to}, mulai bongkar`);log('drv','adm',`${o.id} tiba di tujuan`);render()}
+  if(a==='clr')bindSig();
+  if(a==='pod'){
+    const n=$('#rcv').value.trim();if(!n)return toast('Isi nama penerima dulu');if(!drawn)return toast('Minta penerima tanda tangan dulu');
+    o.receiver=n;o.sign=sigURL();o.status='selesai';o.inv={no:'INV-'+new Date().toISOString().slice(5,7)+new Date().toISOString().slice(8,10)+'-'+o.id.slice(-4),paid:false};
+    log('drv','cust',`${o.id} diterima oleh ${n}, bukti terima tersedia`);log('drv','adm',`Invoice ${o.inv.no} dibuat otomatis ${rp(o.price)}`);render();toast('Bukti terima terkirim, invoice dibuat');
+  }
+  if(a==='cost'){o.costs={bbm:+$('#cb').value||0,tol:+$('#ct').value||0,lain:+$('#cl').value||0};log('drv','adm',`${drv(o.driverId).name} melaporkan biaya jalan ${rp(o.costs.bbm+o.costs.tol+o.costs.lain)} untuk ${o.id}`);render();toast('Biaya jalan terkirim ke kantor')}
+  if(a==='paid'){o.inv.paid=true;log('adm','cust',`Pembayaran ${o.inv.no} diterima, terima kasih`);render()}
+});
+addEventListener('resize',()=>{vFeed();place()});
+
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!S.orders)seed();
+render();
+}
+</script>
+</body>
+</html>
